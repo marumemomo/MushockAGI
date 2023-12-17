@@ -81,9 +81,12 @@ for task in github_issue_list:
     # Create a pull request
     pr = repo.create_pull(
         title=f'Automated update for issue #{task['number']}',
-        body=f'Fix #{task['number']}',
+        body=f'Fix #{task['number']},
         head=task['branch_name'],
         base='main'
     )
 
     print(f'Pull request created: #{pr.number}')
+
+# Run macOS say command at the end of program execution
+subprocess.run(['/usr/bin/osascript', '-e', 'display dialog "Process completed successfully." buttons {"OK"} default button 1'])
