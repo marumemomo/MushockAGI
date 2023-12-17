@@ -1,4 +1,5 @@
 import subprocess
+from config_loader import load_config
 
 def read_file(file_path):
     with open(file_path, 'r') as file:
@@ -10,4 +11,5 @@ def write_file(file_path, content):
 
 def run_git_commands(commands):
     for command in commands:
-        subprocess.run(command)
+        root_dir = load_config()['root_directory']  # Load project root directory from config
+        subprocess.run(command, cwd=root_dir)
