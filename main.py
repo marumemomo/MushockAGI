@@ -49,6 +49,7 @@ for task in github_issue_list:
     You are a Professional Python programmer.
     Please change the following code with the following description.
     The changed code should be output using code blocks.
+    Be sure to output all code for final export to a file.
 
     Description:
     {task['description']}
