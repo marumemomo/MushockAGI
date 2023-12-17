@@ -1,0 +1,3 @@
+model: # dolphin-mixtral:8x7b-v2.5-q3_K_M
+repository: # marumemomo/MushockAGI
+project_root: # /Users/marumemomo/Documents/GitHub/MushockAGI
