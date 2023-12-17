@@ -1,4 +1,4 @@
- import yaml
+import yaml
 import re
 from langchain.llms.ollama import Ollama
 from github import Auth, GithubIntegration
@@ -79,7 +79,7 @@ for task in github_issue_list:
     # Create a pull request
     pr = g.create_pull(
         title=f'Automated update for issue #{task['number']}',
-        body=f'Fix #{task['number']}', {task['description']}',',
+        body=f'Fix #{task['number']}',
         head=task['branch_name'],
         base='main'
     )
