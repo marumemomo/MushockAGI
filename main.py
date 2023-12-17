@@ -1,4 +1,4 @@
-import yaml
+ import yaml
 import re
 from langchain.llms.ollama import Ollama
 from github import Auth, GithubIntegration
@@ -75,3 +75,13 @@ for task in github_issue_list:
     subprocess.run(["git", "add", task['file_path']])
     subprocess.run(["git", "commit", "-m", f"Automated update for issue #{task['number']}"])
     subprocess.run(["git", "push", "-u", "origin", task['branch_name']])
+
+    # Create a pull request
+    pr = g.create_pull(
+        title=f'Automated update for issue #{task['number']}',
+        body=f'Fix #{task['number']}', {task['description']}',',
+        head=task['branch_name'],
+        base='main'
+    )
+
+    print(f'Pull request created: #{pr.number}')
