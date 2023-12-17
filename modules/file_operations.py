@@ -11,5 +11,5 @@ def write_file(file_path, content):
 
 def run_git_commands(commands):
     for command in commands:
-        root_dir = load_config()['root_directory']  # Load project root directory from config
+        root_dir = load_config()['project_root']
         subprocess.run(command, cwd=root_dir)
