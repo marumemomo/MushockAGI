@@ -18,10 +18,11 @@ auth = Auth.AppAuth(
 gi = GithubIntegration(auth=auth)
 installation = gi.get_installations()[0]
 g = installation.get_github_for_installation()
+repo = g.get_repo("marumemomo/MushockAGI")
 
 github_issue_list = []
 
-for issue in g.get_repo("marumemomo/MushockAGI").get_issues(state='open'):
+for issue in repo.get_issues(state='open'):
     toml_data = tomllib.loads(issue.body)
     print(toml_data)
     github_issue_list.append({
@@ -59,7 +60,7 @@ for task in github_issue_list:
     """)
 
     # Extracting code block from response
-    matches = re.findall(r'```.*\n([\s\S]*?)\n```', response, re.MULTILINE)
+    matches = re.findall(r'```.*\n\s*([\s\S]*?)\n```', response, re.MULTILINE)
     if len(matches) > 0:
         changed_code = matches[0]
     else:
@@ -78,7 +79,7 @@ for task in github_issue_list:
     subprocess.run(["git", "push", "-u", "origin", task['branch_name']])
 
     # Create a pull request
-    pr = g.create_pull(
+    pr = repo.create_pull(
         title=f'Automated update for issue #{task['number']}',
         body=f'Fix #{task['number']}',
         head=task['branch_name'],
