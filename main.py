@@ -5,6 +5,7 @@ from github import Auth, GithubIntegration
 import tomllib
 import dotenv
 import os
+import subprocess
 
 dotenv.load_dotenv()
 app_id = os.getenv("GITHUB_APP_ID")
@@ -24,8 +25,10 @@ for issue in g.get_repo("marumemomo/MushockAGI").get_issues(state='open'):
     toml_data = tomllib.loads(issue.body)
     print(toml_data)
     github_issue_list.append({
+        'number': issue.number,
         'description': toml_data["description"],
         'file_path': toml_data['file_path'],
+        'branch_name': f"issue-{issue.number}"
     })
 
 with open('config.yml', 'r') as stream:
@@ -37,6 +40,7 @@ llm = Ollama(
 )
 
 for task in github_issue_list:
+    subprocess.run(["git", "checkout", "-b", task['branch_name']])
     with open(task['file_path'], 'r') as code_file:
         code = code_file.read()
     print("[Invoke LLM]")
@@ -62,3 +66,12 @@ for task in github_issue_list:
         changed_code = response
     print("[Code Result]")
     print(changed_code)
+
+    # Write the modified code to the file
+    with open(task['file_path'], 'w') as code_file:
+        code_file.write(changed_code)
+
+    # Commit and push the changes to the new branch
+    subprocess.run(["git", "add", task['file_path']])
+    subprocess.run(["git", "commit", "-m", f"Automated update for issue #{task['number']}"])
+    subprocess.run(["git", "push", "-u", "origin", task['branch_name']])
