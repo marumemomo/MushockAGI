@@ -89,4 +89,4 @@ for task in github_issue_list:
     print(f'Pull request created: #{pr.number}')
 
 # Run macOS say command at the end of program execution
-subprocess.run(['/usr/bin/osascript', '-e', 'display dialog "Process completed successfully." buttons {"OK"} default button 1'])
+subprocess.run(['say', '"Process completed successfully."'])
