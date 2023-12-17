@@ -1,3 +1,4 @@
+import os
 import tomllib
 from modules.github_module import load_github_config, get_repo_issues
 from modules.llm_module import invoke_llm
@@ -14,15 +15,18 @@ repo_name = config['repository']
 if not repo_name:
     raise ValueError("Repository name is not set in the config file.")
 
+project_root = config['project_root']
+
 repo = g.get_repo(repo_name)
 
 github_issue_list = []
 for issue in get_repo_issues(repo):
     toml_data = tomllib.loads(issue.body)
+    file_path = os.path.join(project_root, toml_data['file_path'])
     github_issue_list.append({
         'number': issue.number,
         'description': toml_data["description"],
-        'file_path': toml_data['file_path'],
+        'file_path': file_path,
         'branch_name': f"issue-{issue.number}"
     })
 
