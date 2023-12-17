@@ -1,2 +1,23 @@
-.env
-*.pem
+#!/usr/bin/env python
+
+import os
+
+def update_gitignore(file_path):
+    # Read current .gitignore file
+    with open(file_path, 'r') as file:
+        gitignore_content = file.read()
+
+    # Add new lines to the end of the file
+    new_lines = [
+        ".env",
+        "*\n*.pem",
+    ]
+
+    for line in new_lines:
+        if not (line in gitignore_content):
+            with open(file_path, 'a') as file:
+                file.write(line + "\n")
+
+    # Print updated .gitignore content to the console
+    print("Updated .gitignore content:")
+    print(gitignore_content)
