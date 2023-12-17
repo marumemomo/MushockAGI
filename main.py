@@ -1,30 +1,16 @@
-import yaml
-import re
-from langchain.llms.ollama import Ollama
-from github import Auth, GithubIntegration
+from modules.github_module import load_github_config, get_repo_issues
+from modules.llm_module import invoke_llm
+from modules.file_operations import read_file, write_file, run_git_commands
+from modules.config_loader import load_config
 import tomllib
-import dotenv
-import os
-import subprocess
+from langchain.llms.ollama import Ollama
 
-dotenv.load_dotenv()
-app_id = os.getenv("GITHUB_APP_ID")
-with open(os.getenv("GITHUB_APP_PRIVATE_KEY"), "r") as f:
-    private_key = f.read()
-auth = Auth.AppAuth(
-    app_id=app_id,
-    private_key=private_key,
-)
-gi = GithubIntegration(auth=auth)
-installation = gi.get_installations()[0]
-g = installation.get_github_for_installation()
+g = load_github_config()
 repo = g.get_repo("marumemomo/MushockAGI")
 
 github_issue_list = []
-
-for issue in repo.get_issues(state='open'):
+for issue in get_repo_issues(repo):
     toml_data = tomllib.loads(issue.body)
-    print(toml_data)
     github_issue_list.append({
         'number': issue.number,
         'description': toml_data["description"],
@@ -32,61 +18,27 @@ for issue in repo.get_issues(state='open'):
         'branch_name': f"issue-{issue.number}"
     })
 
-with open('config.yml', 'r') as stream:
-    config = yaml.safe_load(stream)
-
+config = load_config()
 model = config['model']
-llm = Ollama(
-    model=model
-)
+llm = Ollama(model=model)
 
 for task in github_issue_list:
-    subprocess.run(["git", "checkout", "-b", task['branch_name']])
-    with open(task['file_path'], 'r') as code_file:
-        code = code_file.read()
-    print("[Invoke LLM]")
-    response =  llm.invoke(
-    f"""
-    You are a Professional Python programmer.
-    Please change the following code with the following description.
-    The changed code should be output using code blocks.
-    Be sure to output all code for final export to a file.
-
-    Description:
-    {task['description']}
-
-    Code:
-    {code}
-    """)
-
-    # Extracting code block from response
-    matches = re.findall(r'```.*\n\s*([\s\S]*?)\n```', response, re.MULTILINE)
-    if len(matches) > 0:
-        changed_code = matches[0]
-    else:
-        print("No code block found in the response.")
-        changed_code = response
-    print("[Code Result]")
-    print(changed_code)
-
-    # Write the modified code to the file
-    with open(task['file_path'], 'w') as code_file:
-        code_file.write(changed_code)
-
-    # Commit and push the changes to the new branch
-    subprocess.run(["git", "add", task['file_path']])
-    subprocess.run(["git", "commit", "-m", f"Automated update for issue #{task['number']}"])
-    subprocess.run(["git", "push", "-u", "origin", task['branch_name']])
-
-    # Create a pull request
+    run_git_commands([["git", "checkout", "-b", task['branch_name']]])
+    code = read_file(task['file_path'])
+    task['code'] = code
+    changed_code = invoke_llm(llm, task)
+    write_file(task['file_path'], changed_code)
+    run_git_commands([
+        ["git", "add", task['file_path']],
+        ["git", "commit", "-m", f"Automated update for issue #{task['number']}"],
+        ["git", "push", "-u", "origin", task['branch_name']]
+    ])
     pr = repo.create_pull(
         title=f'Automated update for issue #{task['number']}',
         body=f'Fix #{task['number']}',
         head=task['branch_name'],
         base='main'
     )
-
     print(f'Pull request created: #{pr.number}')
 
-# Run macOS say command at the end of program execution
-subprocess.run(['say', '"Process completed successfully."'])
+run_git_commands([['say', '"Process completed successfully."']])
