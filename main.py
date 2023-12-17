@@ -87,3 +87,6 @@ for task in github_issue_list:
     )
 
     print(f'Pull request created: #{pr.number}')
+
+# Run macOS say command at the end of program execution
+subprocess.run(['say', '"Process completed successfully."'])
