@@ -47,6 +47,4 @@ for task in github_issue_list:
         head=task['branch_name'],
         base='main'
     )
-    print(f'Pull request created: #{pr.number}')
-
-run_git_commands([['say', '"Process completed successfully."']])
+    run_git_commands([['say', f'"Pull request created: #{pr.number}"']])
