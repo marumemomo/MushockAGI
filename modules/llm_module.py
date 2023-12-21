@@ -7,6 +7,7 @@ def invoke_llm(llm, task):
         Please change the following code with the following description.
         The changed code should be output using code blocks.
         Be sure to output all code for final export to a file.
+        If the code is empty, generate the code.
 
         Description:
         {task['description']}

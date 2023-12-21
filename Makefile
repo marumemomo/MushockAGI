@@ -4,5 +4,5 @@ run:
 		git checkout main; \
 		git pull origin main; \
 		python main.py; \
-		sleep 300; \
+		sleep 3600; \
 	done
